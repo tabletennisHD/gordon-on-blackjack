@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gordon on Blackjack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background: #000;
+      color: #fff;
+      image-rendering: pixelated;
+    }
+    .nes-btn {
+      border: 3px solid #fff;
+      padding: 8px 16px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.1s;
+      box-shadow: 4px 4px 0 #000;
+    }
+    .nes-btn:hover:not(:disabled) {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 #000;
+    }
+    .nes-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .nes-card {
+      background: linear-gradient(135deg, #fff 0%, #e8e8e8 100%);
+      border: 3px solid #000;
+      box-shadow: inset -2px -2px 0 #999, inset 2px 2px 0 #fff;
+    }
+    .pixel-card {
+      width: 70px; height: 100px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    @media (max-width: 768px) {
+      .nes-btn { font-size: 8px; padding: 6px 12px; }
+      .pixel-card { width: 50px; height: 75px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+const { useState, useEffect } = React;
+
+const SUITS = ['♠', '♥', '♦', '♣'];
+const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+const BASIC_STRATEGY = {
+  hard: {
+    21: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+    20: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+    19: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+    18: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+    17: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+    16: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    15: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    14: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    13: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    12: { 2: 'H', 3: 'H', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    11: { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'D', 'A': 'D' },
+    10: { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'H', 'A': 'H' },
+    9:  { 2: 'H', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    8:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    7:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    6:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    5:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    4:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+  },
+  soft: {
+    21: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+    20: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+    19: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'D', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+    18: { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'S', 8: 'S', 9: 'H', 10: 'H', 'A': 'H' },
+    17: { 2: 'H', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    16: { 2: 'H', 3: 'H', 4: 'H', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    15: { 2: 'H', 3: 'H', 4: 'H', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    14: { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    13: { 2: 'H', 3: 'H', 4: 'H', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+  },
+  pair: {
+    'A,A': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 'A': 'P' },
+    '10,10': { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+    '9,9': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'S', 8: 'P', 9: 'P', 10: 'S', 'A': 'S' },
+    '8,8': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 'A': 'P' },
+    '7,7': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    '6,6': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    '5,5': { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'H', 'A': 'H' },
+    '4,4': { 2: 'H', 3: 'H', 4: 'H', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    '3,3': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+    '2,2': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+  }
+};
+
+const ACTION_NAMES = { 'H': 'Hit', 'S': 'Stand', 'D': 'Double', 'P': 'Split' };
+
+function GordonOnBlackjack() {
+  const [playerHand, setPlayerHand] = useState([]);
+  const [dealerHand, setDealerHand] = useState([]);
+  const [correctAction, setCorrectAction] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [stats, setStats] = useState({ correct: 0, total: 0 });
+  const [showChart, setShowChart] = useState(false);
+  const [gamePhase, setGamePhase] = useState('betting');
+  const [splitHands, setSplitHands] = useState(null);
+  const [activeSplitIdx, setActiveSplitIdx] = useState(0);
+
+  const getCardValue = (rank) => {
+    if (rank === 'A') return 11;
+    if (['J', 'Q', 'K'].includes(rank)) return 10;
+    return parseInt(rank);
+  };
+
+  const generateRandomCard = () => {
+    const rank = RANKS[Math.floor(Math.random() * RANKS.length)];
+    const suit = SUITS[Math.floor(Math.random() * SUITS.length)];
+    return { rank, suit, value: getCardValue(rank) };
+  };
+
+  const calculateHandValue = (hand) => {
+    let total = 0, aces = 0;
+    hand.forEach(card => {
+      if (card.rank === 'A') { aces++; total += 11; }
+      else total += card.value;
+    });
+    while (total > 21 && aces > 0) { total -= 10; aces--; }
+    return total;
+  };
+
+  const isSoftHand = (hand) => {
+    const hasAce = hand.some(card => card.rank === 'A');
+    if (!hasAce) return false;
+    let total = 0, aces = 0;
+    hand.forEach(card => {
+      if (card.rank === 'A') { aces++; total += 11; }
+      else total += card.value;
+    });
+    while (total > 21 && aces > 0) { total -= 10; aces--; }
+    return aces > 0 && total <= 21;
+  };
+
+  const getCorrectAction = (playerCards, dealerHand) => {
+    const dealerUpcard = dealerHand[0];
+    const dealerRank = ['J', 'Q', 'K'].includes(dealerUpcard.rank) ? '10' : dealerUpcard.rank;
+    
+    if (playerCards.length === 2 && playerCards[0].rank === playerCards[1].rank) {
+      const r1 = ['J', 'Q', 'K'].includes(playerCards[0].rank) ? '10' : playerCards[0].rank;
+      const r2 = ['J', 'Q', 'K'].includes(playerCards[1].rank) ? '10' : playerCards[1].rank;
+      const pairKey = r1 + ',' + r2;
+      if (BASIC_STRATEGY.pair[pairKey]) return BASIC_STRATEGY.pair[pairKey][dealerRank];
+    }
+    
+    if (isSoftHand(playerCards)) {
+      const total = calculateHandValue(playerCards);
+      if (BASIC_STRATEGY.soft[total]) return BASIC_STRATEGY.soft[total][dealerRank];
+    }
+    
+    const total = calculateHandValue(playerCards);
+    return BASIC_STRATEGY.hard[total]?.[dealerRank] || 'H';
+  };
+
+  const getExplanation = (playerCards, dealerHand, action, isCorrect) => {
+    return isCorrect ? 'CORRECT!' : 'WRONG. Book says ' + ACTION_NAMES[correctAction];
+  };
+
+  const dealNewHand = () => {
+    const player = [generateRandomCard(), generateRandomCard()];
+    const dealer = [generateRandomCard(), generateRandomCard()];
+    setPlayerHand(player);
+    setDealerHand(dealer);
+    setGamePhase('player');
+    setFeedback('');
+    setSplitHands(null);
+    setActiveSplitIdx(0);
+    if (calculateHandValue(player) === 21) {
+      setGamePhase('complete');
+      setFeedback(calculateHandValue(dealer) === 21 ? 'PUSH!' : 'BLACKJACK!');
+    } else {
+      setCorrectAction(getCorrectAction(player, dealer));
+    }
+  };
+
+  const activeCards = () => splitHands ? splitHands[activeSplitIdx].cards : playerHand;
+
+  const resolveDealer = (hands) => {
+    let dealerCards = [...dealerHand];
+    while (calculateHandValue(dealerCards) < 17) dealerCards.push(generateRandomCard());
+    setDealerHand(dealerCards);
+    const dt = calculateHandValue(dealerCards);
+    let summary = 'DEALER ' + dt + (dt > 21 ? ' BUST\n' : '\n');
+    hands.forEach(({ cards }, i) => {
+      const t = calculateHandValue(cards);
+      const r = t > 21 ? 'BUST' : dt > 21 ? 'WIN' : t > dt ? 'WIN' : t < dt ? 'LOSE' : 'PUSH';
+      summary += 'Hand ' + (i+1) + ': ' + r + '\n';
+    });
+    setFeedback(summary);
+    setGamePhase('complete');
+  };
+
+  const handleHit = () => {
+    const current = activeCards();
+    const newHand = [...current, generateRandomCard()];
+    const newTotal = calculateHandValue(newHand);
+    
+    if (splitHands) {
+      const updated = splitHands.map((h, i) => i === activeSplitIdx ? { ...h, cards: newHand } : h);
+      if (newTotal > 21 || newTotal === 21) advanceSplitOrResolve(updated, activeSplitIdx);
+      else { setSplitHands(updated); setPlayerHand(newHand); setCorrectAction(getCorrectAction(newHand, dealerHand)); }
+    } else {
+      setPlayerHand(newHand);
+      if (newTotal > 21) { setFeedback('BUST ' + newTotal); setGamePhase('complete'); }
+      else if (newTotal === 21) handleStand(newHand);
+      else setCorrectAction(getCorrectAction(newHand, dealerHand));
+    }
+  };
+
+  const advanceSplitOrResolve = (updatedHands, doneIdx) => {
+    const nextIdx = doneIdx + 1;
+    if (nextIdx < updatedHands.length) {
+      setSplitHands(updatedHands);
+      setActiveSplitIdx(nextIdx);
+      setPlayerHand(updatedHands[nextIdx].cards);
+      setCorrectAction(getCorrectAction(updatedHands[nextIdx].cards, dealerHand));
+    } else resolveDealer(updatedHands);
+  };
+
+  const handleStand = (hand) => {
+    const standHand = hand || activeCards();
+    if (splitHands) {
+      const updated = splitHands.map((h, i) => i === activeSplitIdx ? { ...h, cards: standHand } : h);
+      advanceSplitOrResolve(updated, activeSplitIdx);
+    } else {
+      let dealerCards = [...dealerHand];
+      while (calculateHandValue(dealerCards) < 17) dealerCards.push(generateRandomCard());
+      setDealerHand(dealerCards);
+      const pt = calculateHandValue(standHand);
+      const dt = calculateHandValue(dealerCards);
+      const result = dt > 21 ? 'WIN' : pt > dt ? 'WIN' : pt < dt ? 'LOSE' : 'PUSH';
+      setFeedback(result);
+      setGamePhase('complete');
+    }
+  };
+
+  const handleDouble = () => {
+    const newHand = [...activeCards(), generateRandomCard()];
+    if (splitHands) {
+      const updated = splitHands.map((h, i) => i === activeSplitIdx ? { ...h, cards: newHand } : h);
+      advanceSplitOrResolve(updated, activeSplitIdx);
+    } else {
+      setPlayerHand(newHand);
+      if (calculateHandValue(newHand) > 21) { setFeedback('BUST'); setGamePhase('complete'); }
+      else handleStand(newHand);
+    }
+  };
+
+  const handleSplit = () => {
+    const card = playerHand[0];
+    const hand1 = [card, generateRandomCard()];
+    const hand2 = [playerHand[1], generateRandomCard()];
+    setSplitHands([{ cards: hand1 }, { cards: hand2 }]);
+    setActiveSplitIdx(0);
+    setPlayerHand(hand1);
+    setCorrectAction(getCorrectAction(hand1, dealerHand));
+  };
+
+  const handleAction = (action) => {
+    const isCorrect = action === correctAction;
+    const current = activeCards();
+    setStats(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
+    
+    if (!isCorrect && current.length === 2 && !splitHands) {
+      setFeedback(getExplanation(current, dealerHand, action, isCorrect));
+      return;
+    }
+    
+    switch(action) {
+      case 'H': handleHit(); break;
+      case 'S': handleStand(); break;
+      case 'D': current.length === 2 ? handleDouble() : setFeedback('First move only'); break;
+      case 'P': current.length === 2 ? handleSplit() : setFeedback('First move only'); break;
+    }
+  };
+
+  useEffect(() => { dealNewHand(); }, []);
+
+  const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+
+  return React.createElement('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto' } },
+    React.createElement('div', { style: { background: 'linear-gradient(90deg, #f00, #fa0, #f00)', padding: '4px', marginBottom: '20px' } },
+      React.createElement('div', { style: { background: '#000', padding: '20px', textAlign: 'center' } },
+        React.createElement('h1', { style: { color: '#ff0', fontSize: 'clamp(16px, 5vw, 32px)', textShadow: '3px 3px 0 #a00', marginBottom: '10px', lineHeight: '1.3' } }, 'GORDON ON BLACKJACK'),
+        React.createElement('div', { style: { color: '#0f0', fontSize: '10px', letterSpacing: '2px' } }, '▸ PRESS START ◂')
+      )
+    ),
+    
+    React.createElement('div', { style: { textAlign: 'center', marginBottom: '20px' } },
+      React.createElement('div', { style: { fontSize: '72px', marginBottom: '5px' } }, '🥸'),
+      React.createElement('div', { style: { background: '#06f', border: '3px solid #fff', display: 'inline-block', padding: '8px 16px', fontSize: '10px', color: '#fff' } }, 'DEALER GORDON')
+    ),
+    
+    showChart && React.createElement('div', { style: { background: '#ff8', border: '4px solid #000', padding: '15px', marginBottom: '20px', fontSize: '10px', color: '#000' } },
+      React.createElement('div', { style: { color: '#f00', marginBottom: '8px' } }, '▸ THE BOOK ◂'),
+      'H=Hit • S=Stand • D=Double • P=Split'
+    ),
+    
+    React.createElement('div', { style: { background: '#1a1a1a', border: '8px solid #333', padding: '20px', borderRadius: '10px' } },
+      React.createElement('div', { style: { background: 'linear-gradient(180deg, #1a5f3a 0%, #0d3d26 100%)', border: '4px solid #2a7f4a', padding: '20px', borderRadius: '5px' } },
+        
+        React.createElement('div', { style: { marginBottom: '30px' } },
+          React.createElement('div', { style: { color: '#ff0', fontSize: '10px', marginBottom: '10px' } }, '▸ DEALER'),
+          React.createElement('div', { style: { display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' } },
+            dealerHand.map((card, idx) => 
+              React.createElement('div', { key: idx },
+                (idx === 0 || gamePhase !== 'player') ?
+                  React.createElement('div', { className: 'nes-card pixel-card', style: { color: card.suit === '♥' || card.suit === '♦' ? '#f00' : '#000' } },
+                    React.createElement('div', { style: { fontSize: '20px' } }, card.rank),
+                    React.createElement('div', { style: { fontSize: '28px' } }, card.suit)
+                  ) :
+                  React.createElement('div', { className: 'pixel-card', style: { background: 'linear-gradient(135deg, #06c, #039)', border: '3px solid #fff', color: '#fff', fontSize: '32px' } }, '🂠')
+              )
+            )
+          ),
+          gamePhase !== 'player' && React.createElement('div', { style: { textAlign: 'center', marginTop: '10px', background: 'rgba(0,0,0,0.7)', border: '2px solid #0f0', display: 'inline-block', padding: '5px 15px', fontSize: '10px', color: '#0f0' } },
+            'TOTAL: ' + calculateHandValue(dealerHand)
+          )
+        ),
+        
+        React.createElement('div', { style: { marginBottom: '30px' } },
+          React.createElement('div', { style: { color: '#ff0', fontSize: '10px', marginBottom: '10px' } }, '▸ YOU'),
+          React.createElement('div', { style: { display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' } },
+            playerHand.map((card, idx) =>
+              React.createElement('div', { key: idx, className: 'nes-card pixel-card', style: { color: card.suit === '♥' || card.suit === '♦' ? '#f00' : '#000' } },
+                React.createElement('div', { style: { fontSize: '20px' } }, card.rank),
+                React.createElement('div', { style: { fontSize: '28px' } }, card.suit)
+              )
+            )
+          ),
+          React.createElement('div', { style: { textAlign: 'center', marginTop: '10px', background: 'rgba(0,0,0,0.7)', border: '2px solid #0f0', display: 'inline-block', padding: '5px 15px', fontSize: '10px', color: '#0f0' } },
+            'TOTAL: ' + calculateHandValue(playerHand) + (isSoftHand(playerHand) ? ' (SOFT)' : '')
+          )
+        ),
+        
+        gamePhase === 'player' && React.createElement('div', { style: { marginBottom: '20px' } },
+          React.createElement('div', { style: { textAlign: 'center', marginBottom: '15px', color: '#fff', fontSize: '10px' } }, 'WHAT DO YOU DO?'),
+          React.createElement('div', { style: { display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' } },
+            React.createElement('button', { onClick: () => handleAction('H'), disabled: feedback.startsWith('WRONG'), className: 'nes-btn', style: { background: '#06f', color: '#fff' } }, 'HIT'),
+            React.createElement('button', { onClick: () => handleAction('S'), disabled: feedback.startsWith('WRONG'), className: 'nes-btn', style: { background: '#f00', color: '#fff' } }, 'STAND'),
+            React.createElement('button', { onClick: () => handleAction('D'), disabled: feedback.startsWith('WRONG') || activeCards().length > 2, className: 'nes-btn', style: { background: '#fa0', color: '#000' } }, 'DOUBLE'),
+            React.createElement('button', { onClick: () => handleAction('P'), disabled: feedback.startsWith('WRONG') || activeCards().length > 2 || splitHands, className: 'nes-btn', style: { background: '#a0f', color: '#fff' } }, 'SPLIT')
+          )
+        ),
+        
+        feedback && React.createElement('div', { style: { background: feedback.includes('WIN') || feedback === 'CORRECT!' ? '#0a0' : feedback.startsWith('WRONG') ? '#a00' : '#06f', border: '3px solid #fff', padding: '15px', color: '#fff', fontSize: '10px', textAlign: 'center', whiteSpace: 'pre-wrap' } }, feedback),
+        
+        (gamePhase === 'complete' || feedback.startsWith('WRONG')) && React.createElement('div', { style: { textAlign: 'center', marginTop: '15px' } },
+          React.createElement('button', { onClick: dealNewHand, className: 'nes-btn', style: { background: '#0a0', color: '#fff', fontSize: '10px' } }, 'NEXT HAND')
+        )
+      )
+    ),
+    
+    React.createElement('div', { style: { background: '#333', border: '4px solid #fff', padding: '15px', marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' } },
+      React.createElement('div', { style: { color: '#0f0', fontSize: '10px' } },
+        React.createElement('span', { style: { color: '#fff' } }, 'SCORE: '),
+        stats.correct + '/' + stats.total + ' (' + accuracy + '%)'
+      ),
+      React.createElement('button', { onClick: () => setShowChart(!showChart), className: 'nes-btn', style: { background: '#a0f', color: '#fff', fontSize: '10px' } },
+        showChart ? '✕ HIDE BOOK' : '📖 THE BOOK'
+      )
+    ),
+    
+    React.createElement('div', { style: { textAlign: 'center', marginTop: '30px', fontSize: '8px', color: '#666', borderTop: '2px solid #333', paddingTop: '20px' } },
+      'GORDON ON BLACKJACK © 2026'
+    )
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(GordonOnBlackjack));
+  </script></body></html>
