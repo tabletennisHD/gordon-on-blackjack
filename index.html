@@ -312,10 +312,6 @@ function GordonOnBlackjack() {
       setIsLoadingChat(false);
     });
   };
-    const current = activeCards();
-    setStats(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
-    
-    if (!isCorrect && current.length === 2 && !splitHands) {
       setFeedback(getExplanation(current, dealerHand, action, isCorrect));
       return;
     }
