@@ -290,29 +290,26 @@ function GordonOnBlackjack() {
       ' | Dealer showing: ' + dealerHand[0].rank + dealerHand[0].suit +
       ' | Correct action: ' + (ACTION_NAMES[correctAction] || 'N/A');
 
-    const systemPrompt = "You're Gordon, a veteran Vegas blackjack dealer with 20+ years at the tables. You know basic strategy cold. You're gruff, no-nonsense, but you've got a soft spot for players who want to learn. You don't suffer fools, but you respect people who ask good questions.\n\nYour personality:\n- Direct and straight-shooting. No sugar-coating.\n- Dry humor and occasional sarcasm, but never mean\n- You call it 'the book' when referring to basic strategy\n- Use casino lingo naturally ('the house,' 'stiff hands,' 'bust cards')\n- Short, punchy answers\n- You occasionally drop Vegas dealer wisdom\n- Impressed when someone makes the right play, annoyed when they don't listen\n\n" + handContext + "\n\nRules: 6-deck, dealer stands soft 17, double after split allowed.\n\nPlayer question: " + userMessage + "\n\nAnswer as Gordon. Keep it concise but educational. Tell them what the book says and why. Call out bad plays. Acknowledge good plays with grudging respect.";
-
-    fetch('https://api.anthropic.com/v1/messages', {
+    // Call YOUR Vercel backend instead of Anthropic directly
+    fetch('https://gordon-on-blackjack.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: systemPrompt }]
+        message: userMessage,
+        handContext: handContext
       })
     })
     .then(res => res.json())
     .then(data => {
       if (data.error) {
-        setChatMessages(prev => [...prev, { role: 'assistant', content: 'API Error: ' + data.error.message + '. Chat needs to run on a web server.' }]);
+        setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + data.error }]);
       } else {
-        const msg = data.content && data.content.find(b => b.type === 'text');
-        setChatMessages(prev => [...prev, { role: 'assistant', content: msg ? msg.text : 'No response.' }]);
+        setChatMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
       }
       setIsLoadingChat(false);
     })
     .catch(err => {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error reaching Gordon.' }]);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error reaching Gordon. Make sure the backend is deployed.' }]);
       setIsLoadingChat(false);
     });
   };
