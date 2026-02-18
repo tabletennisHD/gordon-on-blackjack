@@ -175,7 +175,37 @@ function GordonOnBlackjack() {
   };
 
   const getExplanation = (playerCards, dealerHand, action, isCorrect) => {
-    return isCorrect ? 'CORRECT!' : 'WRONG. Book says ' + ACTION_NAMES[correctAction];
+    const dealerUpcard = dealerHand[0];
+    const dealerRank = ['J', 'Q', 'K'].includes(dealerUpcard.rank) ? '10' : dealerUpcard.rank;
+    const total = calculateHandValue(playerCards);
+    const isSoft = isSoftHand(playerCards);
+    const isPair = playerCards.length === 2 && playerCards[0].rank === playerCards[1].rank;
+    
+    let explanation = '';
+    
+    if (isPair) {
+      const rank = playerCards[0].rank;
+      if (rank === 'A') explanation = 'Always split Aces.';
+      else if (rank === '8') explanation = 'Always split 8s.';
+      else if (['10', 'J', 'Q', 'K'].includes(rank)) explanation = 'Never split 10s. You have 20!';
+      else if (rank === '9' && ['7', '10', 'A'].includes(dealerRank)) explanation = `Stand with pair of 9s vs ${dealerRank}.`;
+      else explanation = `The book says ${ACTION_NAMES[correctAction]} with ${rank}s vs ${dealerRank}.`;
+    } else if (isSoft) {
+      if (total >= 19) explanation = `Stand on soft ${total}.`;
+      else if (total === 18 && ['9', '10', 'A'].includes(dealerRank)) explanation = `Hit soft 18 vs ${dealerRank}.`;
+      else explanation = `The book says ${ACTION_NAMES[correctAction]} on soft ${total} vs ${dealerRank}.`;
+    } else {
+      if (total >= 17) explanation = `Stand on hard ${total}.`;
+      else if (total === 16 && ['7', '8', '9', '10', 'A'].includes(dealerRank)) explanation = `Hit 16 vs dealer ${dealerRank}. Tough spot but hitting gives you a chance.`;
+      else if (total === 12 && ['4', '5', '6'].includes(dealerRank)) explanation = `Stand on 12 vs ${dealerRank}. Dealer likely to bust.`;
+      else if (total === 11) explanation = 'Always double on 11!';
+      else if (total === 10 && !['10', 'A'].includes(dealerRank)) explanation = `Double on 10 vs ${dealerRank}.`;
+      else explanation = `The book says ${ACTION_NAMES[correctAction]} on ${total} vs ${dealerRank}.`;
+    }
+    
+    return isCorrect 
+      ? `✓ CORRECT! ${explanation}`
+      : `✗ WRONG. Should ${ACTION_NAMES[correctAction]}. ${explanation}`;
   };
 
   const dealNewHand = () => {
@@ -300,12 +330,36 @@ function GordonOnBlackjack() {
     })
     .then(res => res.json())
     .then(data => {
+      setIsLoadingChat(false);
       if (data.error) {
         setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + data.error }]);
       } else {
-        setChatMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+        // Add empty Gordon message first
+        setChatMessages(prev => [...prev, { role: 'assistant', content: '', isTyping: true }]);
+        
+        // Typewriter effect
+        const fullMessage = data.message;
+        let currentIndex = 0;
+        
+        const typeInterval = setInterval(() => {
+          currentIndex++;
+          const partialMessage = fullMessage.substring(0, currentIndex);
+          
+          setChatMessages(prev => {
+            const newMessages = [...prev];
+            newMessages[newMessages.length - 1] = { 
+              role: 'assistant', 
+              content: partialMessage,
+              isTyping: currentIndex < fullMessage.length
+            };
+            return newMessages;
+          });
+          
+          if (currentIndex >= fullMessage.length) {
+            clearInterval(typeInterval);
+          }
+        }, 20); // 20ms per character = fast typewriter effect
       }
-      setIsLoadingChat(false);
     })
     .catch(err => {
       setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error reaching Gordon.' }]);
@@ -318,8 +372,12 @@ function GordonOnBlackjack() {
     const current = activeCards();
     setStats(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
     
+    // Show feedback for EVERY move
+    const explanation = getExplanation(current, dealerHand, action, isCorrect);
+    setFeedback(explanation);
+    
+    // If wrong on first move, pause so they can read the feedback
     if (!isCorrect && current.length === 2 && !splitHands) {
-      setFeedback(getExplanation(current, dealerHand, action, isCorrect));
       return;
     }
     
