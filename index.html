@@ -290,7 +290,6 @@ function GordonOnBlackjack() {
       ' | Dealer showing: ' + dealerHand[0].rank + dealerHand[0].suit +
       ' | Correct action: ' + (ACTION_NAMES[correctAction] || 'N/A');
 
-    // Call YOUR Vercel backend instead of Anthropic directly
     fetch('https://gordon-on-blackjack.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -309,13 +308,10 @@ function GordonOnBlackjack() {
       setIsLoadingChat(false);
     })
     .catch(err => {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error reaching Gordon. Make sure the backend is deployed.' }]);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error reaching Gordon.' }]);
       setIsLoadingChat(false);
     });
   };
-
-  const handleAction = (action) => {
-    const isCorrect = action === correctAction;
     const current = activeCards();
     setStats(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
     
