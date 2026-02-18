@@ -119,6 +119,14 @@ function GordonOnBlackjack() {
   const [chatInput, setChatInput] = useState('');
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const chatContainerRef = React.useRef(null);
+
+  // Auto-scroll chat to bottom when messages change
+  React.useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
 
   const getCardValue = (rank) => {
     if (rank === 'A') return 11;
@@ -498,7 +506,7 @@ function GordonOnBlackjack() {
           React.createElement('div', { style: { marginTop: '8px', fontSize: '8px', opacity: 0.8 } }, 'All other features work on mobile!')
         ) :
         React.createElement('div', null,
-          React.createElement('div', { style: { border: '3px solid #666', background: '#0a0a0a', padding: '15px', marginBottom: '15px', minHeight: '150px', maxHeight: '400px', overflowY: 'auto', fontSize: '9px', lineHeight: '1.5' } },
+          React.createElement('div', { ref: chatContainerRef, style: { border: '3px solid #666', background: '#0a0a0a', padding: '15px', marginBottom: '15px', minHeight: '150px', maxHeight: '400px', overflowY: 'auto', fontSize: '9px', lineHeight: '1.5' } },
             chatMessages.length === 0 && !isLoadingChat && React.createElement('div', { style: { color: '#666', fontStyle: 'italic' } }, "Gordon's wisdom appears here. Ask about strategy!"),
             chatMessages.map((msg, idx) =>
               React.createElement('div', { key: idx, style: { background: msg.role === 'user' ? '#036' : '#1a1a1a', border: '2px solid ' + (msg.role === 'user' ? '#06f' : '#0f0'), padding: '10px', marginBottom: '10px', borderRadius: '3px' } },
