@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +9,7 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -51,6 +52,7 @@
       .pixel-card { width: 50px; height: 75px; font-size: 14px; }
     }
   </style>
+
 </head>
 <body>
   <div id="root"></div>
@@ -62,414 +64,510 @@ const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 
 // VERIFIED BASIC STRATEGY - 6 deck, S17, DAS
 const BASIC_STRATEGY = {
-  hard: {
-    21: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
-    20: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
-    19: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
-    18: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
-    17: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
-    16: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    15: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    14: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    13: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    12: { 2: 'H', 3: 'H', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    11: { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'D', 'A': 'D' },
-    10: { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'H', 'A': 'H' },
-    9:  { 2: 'H', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    8:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    7:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    6:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    5:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    4:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-  },
-  soft: {
-    21: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
-    20: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
-    19: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'D', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
-    18: { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'S', 8: 'S', 9: 'H', 10: 'H', 'A': 'H' },
-    17: { 2: 'H', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    16: { 2: 'H', 3: 'H', 4: 'H', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    15: { 2: 'H', 3: 'H', 4: 'H', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    14: { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    13: { 2: 'H', 3: 'H', 4: 'H', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-  },
-  pair: {
-    'A,A': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 'A': 'P' },
-    '10,10': { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
-    '9,9': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'S', 8: 'P', 9: 'P', 10: 'S', 'A': 'S' },
-    '8,8': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 'A': 'P' },
-    '7,7': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    '6,6': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    '5,5': { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'H', 'A': 'H' },
-    '4,4': { 2: 'H', 3: 'H', 4: 'H', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    '3,3': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-    '2,2': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
-  }
+hard: {
+21: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+20: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+19: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+18: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+17: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+16: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+15: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+14: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+13: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+12: { 2: 'H', 3: 'H', 4: 'S', 5: 'S', 6: 'S', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+11: { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'D', 'A': 'D' },
+10: { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'H', 'A': 'H' },
+9:  { 2: 'H', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+8:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+7:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+6:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+5:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+4:  { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+},
+soft: {
+21: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+20: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+19: { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'D', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+18: { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'S', 8: 'S', 9: 'H', 10: 'H', 'A': 'H' },
+17: { 2: 'H', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+16: { 2: 'H', 3: 'H', 4: 'H', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+15: { 2: 'H', 3: 'H', 4: 'H', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+14: { 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+13: { 2: 'H', 3: 'H', 4: 'H', 5: 'D', 6: 'D', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+},
+pair: {
+'A,A': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 'A': 'P' },
+'10,10': { 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 'A': 'S' },
+'9,9': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'S', 8: 'P', 9: 'P', 10: 'S', 'A': 'S' },
+'8,8': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 'A': 'P' },
+'7,7': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+'6,6': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+'5,5': { 2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'H', 'A': 'H' },
+'4,4': { 2: 'H', 3: 'H', 4: 'H', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+'3,3': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+'2,2': { 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'P', 8: 'H', 9: 'H', 10: 'H', 'A': 'H' },
+}
 };
 
 const ACTION_NAMES = { 'H': 'Hit', 'S': 'Stand', 'D': 'Double', 'P': 'Split' };
 
 function GordonOnBlackjack() {
-  const [playerHand, setPlayerHand] = useState([]);
-  const [dealerHand, setDealerHand] = useState([]);
-  const [correctAction, setCorrectAction] = useState('');
-  const [feedback, setFeedback] = useState('');
-  const [stats, setStats] = useState({ correct: 0, total: 0 });
-  const [winStats, setWinStats] = useState({ wins: 0, handsTotal: 0 });
-  const [gamePhase, setGamePhase] = useState('betting');
-  const [splitHands, setSplitHands] = useState(null);
-  const [activeSplitIdx, setActiveSplitIdx] = useState(0);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const [isLoadingChat, setIsLoadingChat] = useState(false);
-  const chatContainerRef = React.useRef(null);
+const [playerHand, setPlayerHand] = useState([]);
+const [dealerHand, setDealerHand] = useState([]);
+const [correctAction, setCorrectAction] = useState('');
+const [feedback, setFeedback] = useState('');
+const [stats, setStats] = useState({ correct: 0, total: 0 });
+const [winStats, setWinStats] = useState({ wins: 0, handsTotal: 0 });
+const [gamePhase, setGamePhase] = useState('betting');
+const [splitHands, setSplitHands] = useState(null);
+const [activeSplitIdx, setActiveSplitIdx] = useState(0);
+const [wrongFeedback, setWrongFeedback] = useState('');
+const [chatMessages, setChatMessages] = useState([]);
+const [chatInput, setChatInput] = useState('');
+const [isLoadingChat, setIsLoadingChat] = useState(false);
+const chatContainerRef = React.useRef(null);
 
-  // Auto-scroll chat
-  React.useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [chatMessages]);
+// Auto-scroll chat
+React.useEffect(() => {
+if (chatContainerRef.current) {
+chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+}
+}, [chatMessages]);
 
-  const getCardValue = (rank) => {
-    if (rank === 'A') return 11;
-    if (['J', 'Q', 'K'].includes(rank)) return 10;
-    return parseInt(rank);
-  };
+const getCardValue = (rank) => {
+if (rank === 'A') return 11;
+if (['J', 'Q', 'K'].includes(rank)) return 10;
+return parseInt(rank);
+};
 
-  const generateRandomCard = () => {
-    const rank = RANKS[Math.floor(Math.random() * RANKS.length)];
-    const suit = SUITS[Math.floor(Math.random() * SUITS.length)];
-    return { rank, suit, value: getCardValue(rank) };
-  };
+const generateRandomCard = () => {
+const rank = RANKS[Math.floor(Math.random() * RANKS.length)];
+const suit = SUITS[Math.floor(Math.random() * SUITS.length)];
+return { rank, suit, value: getCardValue(rank) };
+};
 
-  const calculateHandValue = (hand) => {
-    let total = 0, aces = 0;
-    hand.forEach(card => {
-      if (card.rank === 'A') { aces++; total += 11; }
-      else total += card.value;
-    });
-    while (total > 21 && aces > 0) { total -= 10; aces--; }
-    return total;
-  };
+const calculateHandValue = (hand) => {
+let total = 0, aces = 0;
+hand.forEach(card => {
+if (card.rank === 'A') { aces++; total += 11; }
+else total += card.value;
+});
+while (total > 21 && aces > 0) { total -= 10; aces--; }
+return total;
+};
 
-  const isSoftHand = (hand) => {
-    const hasAce = hand.some(card => card.rank === 'A');
-    if (!hasAce) return false;
-    let total = 0, aces = 0;
-    hand.forEach(card => {
-      if (card.rank === 'A') { aces++; total += 11; }
-      else total += card.value;
-    });
-    while (total > 21 && aces > 0) { total -= 10; aces--; }
-    return aces > 0 && total <= 21;
-  };
+const isSoftHand = (hand) => {
+const hasAce = hand.some(card => card.rank === 'A');
+if (!hasAce) return false;
+let total = 0, aces = 0;
+hand.forEach(card => {
+if (card.rank === 'A') { aces++; total += 11; }
+else total += card.value;
+});
+while (total > 21 && aces > 0) { total -= 10; aces--; }
+return aces > 0 && total <= 21;
+};
 
-  const getCorrectAction = (playerCards, dealerHand) => {
-    const dealerUpcard = dealerHand[0];
-    const dealerRank = ['J', 'Q', 'K'].includes(dealerUpcard.rank) ? '10' : dealerUpcard.rank;
-    
-    if (playerCards.length === 2 && playerCards[0].rank === playerCards[1].rank) {
-      const r1 = ['J', 'Q', 'K'].includes(playerCards[0].rank) ? '10' : playerCards[0].rank;
-      const r2 = ['J', 'Q', 'K'].includes(playerCards[1].rank) ? '10' : playerCards[1].rank;
-      const pairKey = `${r1},${r2}`;
-      if (BASIC_STRATEGY.pair[pairKey]) return BASIC_STRATEGY.pair[pairKey][dealerRank];
-    }
-    
-    if (isSoftHand(playerCards)) {
-      const total = calculateHandValue(playerCards);
-      if (BASIC_STRATEGY.soft[total]) return BASIC_STRATEGY.soft[total][dealerRank];
-    }
-    
-    const total = calculateHandValue(playerCards);
-    return BASIC_STRATEGY.hard[total]?.[dealerRank] || 'H';
-  };
+const getCorrectAction = (playerCards, dealerHand) => {
+const dealerUpcard = dealerHand[0];
+const dealerRank = ['J', 'Q', 'K'].includes(dealerUpcard.rank) ? '10' : dealerUpcard.rank;
 
-  const getExplanation = (playerCards, dealerHand, action, isCorrect) => {
-    const dealerUpcard = dealerHand[0];
-    const dealerRank = ['J', 'Q', 'K'].includes(dealerUpcard.rank) ? '10' : dealerUpcard.rank;
-    const total = calculateHandValue(playerCards);
-    const isSoft = isSoftHand(playerCards);
-    const isPair = playerCards.length === 2 && playerCards[0].rank === playerCards[1].rank;
-    
-    let explanation = '';
-    
-    if (isPair) {
-      const rank = playerCards[0].rank;
-      if (rank === 'A') explanation = 'Always split Aces.';
-      else if (rank === '8') explanation = 'Always split 8s.';
-      else if (['10', 'J', 'Q', 'K'].includes(rank)) explanation = 'Never split 10s. You have 20!';
-      else if (rank === '9' && ['7', '10', 'A'].includes(dealerRank)) explanation = `Stand with pair of 9s vs ${dealerRank}.`;
-      else explanation = `The book says ${ACTION_NAMES[correctAction]} with ${rank}s vs ${dealerRank}.`;
-    } else if (isSoft) {
-      if (total >= 19) explanation = `Stand on soft ${total}.`;
-      else if (total === 18 && ['9', '10', 'A'].includes(dealerRank)) explanation = `Hit soft 18 vs ${dealerRank}.`;
-      else explanation = `The book says ${ACTION_NAMES[correctAction]} on soft ${total} vs ${dealerRank}.`;
-    } else {
-      if (total >= 17) explanation = `Stand on hard ${total}.`;
-      else if (total === 16 && ['7', '8', '9', '10', 'A'].includes(dealerRank)) explanation = `Hit 16 vs dealer ${dealerRank}.`;
-      else if (total === 12 && ['4', '5', '6'].includes(dealerRank)) explanation = `Stand on 12 vs ${dealerRank}. Dealer likely to bust.`;
-      else if (total === 11) explanation = 'Always double on 11!';
-      else if (total === 10 && !['10', 'A'].includes(dealerRank)) explanation = `Double on 10 vs ${dealerRank}.`;
-      else explanation = `The book says ${ACTION_NAMES[correctAction]} on ${total} vs ${dealerRank}.`;
-    }
-    
-    return isCorrect 
-      ? `✓ CORRECT! ${explanation}`
-      : `✗ WRONG. Should ${ACTION_NAMES[correctAction]}. ${explanation}`;
-  };
+if (playerCards.length === 2 && playerCards[0].rank === playerCards[1].rank) {
+  const r1 = ['J', 'Q', 'K'].includes(playerCards[0].rank) ? '10' : playerCards[0].rank;
+  const r2 = ['J', 'Q', 'K'].includes(playerCards[1].rank) ? '10' : playerCards[1].rank;
+  const pairKey = `${r1},${r2}`;
+  if (BASIC_STRATEGY.pair[pairKey]) return BASIC_STRATEGY.pair[pairKey][dealerRank];
+}
 
-  const dealNewHand = () => {
-    const player = [generateRandomCard(), generateRandomCard()];
-    const dealer = [generateRandomCard(), generateRandomCard()];
-    setPlayerHand(player);
-    setDealerHand(dealer);
-    setGamePhase('player');
-    setFeedback('');
-    setSplitHands(null);
-    setActiveSplitIdx(0);
-    if (calculateHandValue(player) === 21) {
-      setGamePhase('complete');
-      const isBlackjackWin = calculateHandValue(dealer) !== 21;
-      setFeedback(isBlackjackWin ? '✓ BLACKJACK!' : 'PUSH!');
-      setWinStats(prev => ({ wins: prev.wins + (isBlackjackWin ? 1 : 0), handsTotal: prev.handsTotal + 1 }));
-    } else {
-      setCorrectAction(getCorrectAction(player, dealer));
-    }
-  };
+if (isSoftHand(playerCards)) {
+  const total = calculateHandValue(playerCards);
+  if (BASIC_STRATEGY.soft[total]) return BASIC_STRATEGY.soft[total][dealerRank];
+}
 
-  const activeCards = () => splitHands ? splitHands[activeSplitIdx].cards : playerHand;
+const total = calculateHandValue(playerCards);
+return BASIC_STRATEGY.hard[total]?.[dealerRank] || 'H';
 
-  const resolveDealer = (hands) => {
-    let dealerCards = [...dealerHand];
-    while (calculateHandValue(dealerCards) < 17) dealerCards.push(generateRandomCard());
-    setDealerHand(dealerCards);
-    const dt = calculateHandValue(dealerCards);
-    let summary = `DEALER ${dt}${dt > 21 ? ' BUST' : ''}\n`;
-    let splitWins = 0;
-    hands.forEach(({ cards }, i) => {
-      const t = calculateHandValue(cards);
-      const r = t > 21 ? 'BUST' : dt > 21 ? 'WIN' : t > dt ? 'WIN' : t < dt ? 'LOSE' : 'PUSH';
-      if (r === 'WIN') splitWins++;
-      summary += `Hand ${i+1}: ${r}\n`;
-    });
-    setWinStats(prev => ({ wins: prev.wins + (splitWins > 0 ? 1 : 0), handsTotal: prev.handsTotal + 1 }));
-    setFeedback(summary);
-    setGamePhase('complete');
-  };
+};
 
-  const handleHit = () => {
-    const current = activeCards();
-    const newHand = [...current, generateRandomCard()];
-    const newTotal = calculateHandValue(newHand);
-    
-    if (splitHands) {
-      const updated = splitHands.map((h, i) => i === activeSplitIdx ? { ...h, cards: newHand } : h);
-      if (newTotal > 21 || newTotal === 21) advanceSplitOrResolve(updated, activeSplitIdx);
-      else { setSplitHands(updated); setPlayerHand(newHand); setCorrectAction(getCorrectAction(newHand, dealerHand)); }
-    } else {
-      setPlayerHand(newHand);
-      if (newTotal > 21) { setFeedback(`BUST ${newTotal}`); setWinStats(prev => ({ ...prev, handsTotal: prev.handsTotal + 1 })); setGamePhase('complete'); }
-      else if (newTotal === 21) handleStand(newHand);
-      else setCorrectAction(getCorrectAction(newHand, dealerHand));
-    }
-  };
+const getExplanation = (playerCards, dealerHand, action, isCorrect) => {
+const dealerUpcard = dealerHand[0];
+const dealerRank = ['J', 'Q', 'K'].includes(dealerUpcard.rank) ? '10' : dealerUpcard.rank;
+const total = calculateHandValue(playerCards);
+const isSoft = isSoftHand(playerCards);
+const isPair = playerCards.length === 2 && playerCards[0].rank === playerCards[1].rank;
 
-  const advanceSplitOrResolve = (updatedHands, doneIdx) => {
-    const nextIdx = doneIdx + 1;
-    if (nextIdx < updatedHands.length) {
-      setSplitHands(updatedHands);
-      setActiveSplitIdx(nextIdx);
-      setPlayerHand(updatedHands[nextIdx].cards);
-      setCorrectAction(getCorrectAction(updatedHands[nextIdx].cards, dealerHand));
-    } else resolveDealer(updatedHands);
-  };
+let explanation = '';
 
-  const handleStand = (hand) => {
-    const standHand = hand || activeCards();
-    if (splitHands) {
-      const updated = splitHands.map((h, i) => i === activeSplitIdx ? { ...h, cards: standHand } : h);
-      advanceSplitOrResolve(updated, activeSplitIdx);
-    } else {
-      let dealerCards = [...dealerHand];
-      while (calculateHandValue(dealerCards) < 17) dealerCards.push(generateRandomCard());
-      setDealerHand(dealerCards);
-      const pt = calculateHandValue(standHand);
-      const dt = calculateHandValue(dealerCards);
-      const result = dt > 21 ? 'WIN - DEALER BUST' : pt > dt ? 'YOU WIN' : pt < dt ? 'DEALER WINS' : 'PUSH';
-      setFeedback(result);
-      setWinStats(prev => ({ wins: prev.wins + (result.includes('WIN') ? 1 : 0), handsTotal: prev.handsTotal + 1 }));
-      setGamePhase('complete');
-    }
-  };
+if (isPair) {
+  const rank = playerCards[0].rank;
+  if (rank === 'A') explanation = "Always split Aces. No exceptions — not even for me.";
+  else if (rank === '8') explanation = "Always split 8s. Sixteen is a garbage hand. Two eights? At least you've got options.";
+  else if (['10', 'J', 'Q', 'K'].includes(rank)) explanation = "Never split 10s. You're sitting on 20. Don't get clever.";
+  else if (rank === '9' && ['7', '10', 'A'].includes(dealerRank)) explanation = `Nine-nine vs ${dealerRank} — you stand. Your 18 is good enough here.`;
+  else explanation = `Book says ${ACTION_NAMES[correctAction]} with ${rank}s vs ${dealerRank}. Trust the math.`;
+} else if (isSoft) {
+  if (total >= 19) explanation = `Soft ${total}. You're in good shape — stand and let the dealer sweat.`;
+  else if (total === 18 && ['9', '10', 'A'].includes(dealerRank)) explanation = `Soft 18 vs a ${dealerRank}? That ace gives you wiggle room. Use it — hit.`;
+  else explanation = `Book says ${ACTION_NAMES[correctAction]} on soft ${total} vs ${dealerRank}.`;
+} else {
+  if (total >= 17) explanation = `Hard ${total}. You stand. Unless you enjoy losing.`;
+  else if (total === 16 && ['7', '8', '9', '10', 'A'].includes(dealerRank)) explanation = `Sixteen vs a ${dealerRank} — yeah, this one hurts either way. Hit it.`;
+  else if (total === 12 && ['4', '5', '6'].includes(dealerRank)) explanation = `Stand on 12 vs ${dealerRank}. Dealer's more likely to bust than you are. Let them do the work.`;
+  else if (total === 11) explanation = "Eleven. You double. Every time. That's not a suggestion.";
+  else if (total === 10 && !['10', 'A'].includes(dealerRank)) explanation = `Double on 10 vs ${dealerRank}. Good spot to press your advantage.`;
+  else explanation = `Book says ${ACTION_NAMES[correctAction]} on ${total} vs ${dealerRank}.`;
+}
 
-  const handleDouble = () => {
-    const newHand = [...activeCards(), generateRandomCard()];
-    if (splitHands) {
-      const updated = splitHands.map((h, i) => i === activeSplitIdx ? { ...h, cards: newHand } : h);
-      advanceSplitOrResolve(updated, activeSplitIdx);
-    } else {
-      setPlayerHand(newHand);
-      if (calculateHandValue(newHand) > 21) { setFeedback(`BUST ${calculateHandValue(newHand)}`); setWinStats(prev => ({ ...prev, handsTotal: prev.handsTotal + 1 })); setGamePhase('complete'); }
-      else handleStand(newHand);
-    }
-  };
+return isCorrect 
+  ? `✓ ${explanation}`
+  : `✗ Should ${ACTION_NAMES[correctAction]}. ${explanation}`;
 
-  const handleSplit = () => {
-    const card = playerHand[0];
-    const hand1 = [card, generateRandomCard()];
-    const hand2 = [playerHand[1], generateRandomCard()];
-    setSplitHands([{ cards: hand1 }, { cards: hand2 }]);
-    setActiveSplitIdx(0);
-    setPlayerHand(hand1);
-    setCorrectAction(getCorrectAction(hand1, dealerHand));
-  };
+};
 
-  const handleAction = (action) => {
-    const isCorrect = action === correctAction;
-    const current = activeCards();
-    setStats(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
-    
-    const explanation = getExplanation(current, dealerHand, action, isCorrect);
+const dealNewHand = () => {
+const player = [generateRandomCard(), generateRandomCard()];
+const dealer = [generateRandomCard(), generateRandomCard()];
+setPlayerHand(player);
+setDealerHand(dealer);
+setGamePhase('player');
+setFeedback('');
+setWrongFeedback('');
+setSplitHands(null);
+setActiveSplitIdx(0);
+if (calculateHandValue(player) === 21) {
+setGamePhase('complete');
+const isBlackjackWin = calculateHandValue(dealer) !== 21;
+setFeedback(isBlackjackWin ? '✓ BLACKJACK!' : 'PUSH!');
+setWinStats(prev => ({ wins: prev.wins + (isBlackjackWin ? 1 : 0), handsTotal: prev.handsTotal }));
+} else {
+setCorrectAction(getCorrectAction(player, dealer));
+}
+};
+
+const activeCards = () => splitHands ? splitHands[activeSplitIdx].cards : playerHand;
+
+const resolveDealer = (hands) => {
+let dealerCards = [...dealerHand];
+while (calculateHandValue(dealerCards) < 17) dealerCards.push(generateRandomCard());
+setDealerHand(dealerCards);
+const dt = calculateHandValue(dealerCards);
+let splitWins = 0;
+const results = hands.map(({ cards }) => {
+const t = calculateHandValue(cards);
+const r = t > 21 ? 'BUST' : dt > 21 ? 'WIN' : t > dt ? 'WIN' : t < dt ? 'LOSE' : 'PUSH';
+if (r === 'WIN') splitWins++;
+return r;
+});
+setSplitHands(hands.map((h, i) => ({ ...h, result: results[i] })));
+setWinStats(prev => ({ wins: prev.wins + (splitWins > 0 ? 1 : 0), handsTotal: prev.handsTotal }));
+const dealerLabel = `DEALER: ${dt}${dt > 21 ? ' (BUST)' : ''}`;
+setFeedback(dealerLabel);
+setGamePhase('complete');
+};
+
+const advanceSplitOrResolve = (updatedHands, doneIdx) => {
+const nextIdx = doneIdx + 1;
+if (nextIdx < updatedHands.length) {
+setSplitHands(updatedHands);
+setActiveSplitIdx(nextIdx);
+setCorrectAction(getCorrectAction(updatedHands[nextIdx].cards, dealerHand));
+setFeedback('');
+setWrongFeedback('');
+} else {
+resolveDealer(updatedHands);
+}
+};
+
+const handleHit = () => {
+const current = activeCards();
+const newHand = [...current, generateRandomCard()];
+const newTotal = calculateHandValue(newHand);
+if (splitHands) {
+const updated = splitHands.map((h, i) => i === activeSplitIdx ? { ...h, cards: newHand } : h);
+setSplitHands(updated);
+if (newTotal > 21) {
+advanceSplitOrResolve(updated, activeSplitIdx);
+} else {
+setCorrectAction(getCorrectAction(newHand, dealerHand));
+setFeedback('');
+}
+} else {
+setPlayerHand(newHand);
+if (newTotal > 21) {
+setFeedback(`BUST! ${newTotal}`);
+setGamePhase('complete');
+} else if (newTotal === 21) {
+handleStand(newHand);
+} else {
+setCorrectAction(getCorrectAction(newHand, dealerHand));
+setFeedback('');
+}
+}
+};
+
+const handleStand = (hand) => {
+const standHand = hand || activeCards();
+if (splitHands) {
+const updated = splitHands.map((h, i) => i === activeSplitIdx ? { ...h, cards: standHand } : h);
+advanceSplitOrResolve(updated, activeSplitIdx);
+} else {
+let dealerCards = [...dealerHand];
+while (calculateHandValue(dealerCards) < 17) dealerCards.push(generateRandomCard());
+setDealerHand(dealerCards);
+const pt = calculateHandValue(standHand);
+const dt = calculateHandValue(dealerCards);
+const result = dt > 21 ? 'WIN - DEALER BUST' : pt > dt ? 'YOU WIN' : pt < dt ? 'DEALER WINS' : 'PUSH';
+setFeedback(result);
+setWinStats(prev => ({ wins: prev.wins + (result.includes('WIN') ? 1 : 0), handsTotal: prev.handsTotal }));
+setGamePhase('complete');
+}
+};
+
+const handleDouble = () => {
+const newHand = [...activeCards(), generateRandomCard()];
+if (splitHands) {
+const updated = splitHands.map((h, i) => i === activeSplitIdx ? { ...h, cards: newHand } : h);
+setSplitHands(updated);
+if (calculateHandValue(newHand) > 21) {
+advanceSplitOrResolve(updated, activeSplitIdx);
+} else {
+const standHand = newHand;
+advanceSplitOrResolve(updated.map((h, i) => i === activeSplitIdx ? { ...h, cards: standHand } : h), activeSplitIdx);
+}
+} else {
+setPlayerHand(newHand);
+if (calculateHandValue(newHand) > 21) {
+setFeedback(`BUST! ${calculateHandValue(newHand)}`);
+setGamePhase('complete');
+} else {
+handleStand(newHand);
+}
+}
+};
+
+const handleSplit = () => {
+const activeHand = activeCards();
+const card1 = activeHand[0];
+const card2 = activeHand[1];
+const hand1 = [card1, generateRandomCard()];
+const hand2 = [card2, generateRandomCard()];
+if (splitHands) {
+const before = splitHands.slice(0, activeSplitIdx);
+const after = splitHands.slice(activeSplitIdx + 1);
+const newHands = [...before, { cards: hand1 }, { cards: hand2 }, ...after];
+setSplitHands(newHands);
+setCorrectAction(getCorrectAction(hand1, dealerHand));
+setFeedback('');
+} else {
+setSplitHands([{ cards: hand1 }, { cards: hand2 }]);
+setActiveSplitIdx(0);
+setCorrectAction(getCorrectAction(hand1, dealerHand));
+setFeedback('');
+}
+};
+
+const handleAction = (action) => {
+const isCorrect = action === correctAction;
+const current = activeCards();
+setStats(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
+
+if (!isCorrect) {
+  const explanation = getExplanation(current, dealerHand, action, isCorrect);
+  if (splitHands) {
+    setWrongFeedback(explanation);
+  } else {
     setFeedback(explanation);
+  }
+  return;
+}
+
+setWrongFeedback('');
+switch(action) {
+  case 'H': handleHit(); break;
+  case 'S': handleStand(); break;
+  case 'D': current.length === 2 ? handleDouble() : null; break;
+  case 'P': current.length === 2 ? handleSplit() : null; break;
+}
+
+};
+
+const handleChatSubmit = async () => {
+if (!chatInput.trim() || isLoadingChat) return;
+const userMessage = chatInput.trim();
+setChatInput('');
+setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+setIsLoadingChat(true);
+
+const handContext = `Player: ${playerHand.map(c => c.rank + c.suit).join(', ')} (Total: ${calculateHandValue(playerHand)}${isSoftHand(playerHand) ? ' - Soft' : ''}) | Dealer showing: ${dealerHand[0].rank}${dealerHand[0].suit} | Correct action: ${ACTION_NAMES[correctAction] || 'N/A'}`;
+
+try {
+  const response = await fetch('https://gordon-on-blackjack.vercel.app/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: userMessage, handContext: handContext })
+  });
+
+  const data = await response.json();
+  setIsLoadingChat(false);
+  
+  if (data.error) {
+    setChatMessages(prev => [...prev, { role: 'assistant', content: `Error: ${data.error}` }]);
+  } else {
+    setChatMessages(prev => [...prev, { role: 'assistant', content: '', isTyping: true }]);
     
-    if (!isCorrect && current.length === 2 && !splitHands) {
-      return;
-    }
+    const fullMessage = data.message;
+    let currentIndex = 0;
     
-    switch(action) {
-      case 'H': handleHit(); break;
-      case 'S': handleStand(); break;
-      case 'D': current.length === 2 ? handleDouble() : setFeedback('First move only'); break;
-      case 'P': current.length === 2 ? handleSplit() : setFeedback('First move only'); break;
-    }
-  };
-
-  const handleChatSubmit = async () => {
-    if (!chatInput.trim() || isLoadingChat) return;
-    const userMessage = chatInput.trim();
-    setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    setIsLoadingChat(true);
-
-    const handContext = `Player: ${playerHand.map(c => c.rank + c.suit).join(', ')} (Total: ${calculateHandValue(playerHand)}${isSoftHand(playerHand) ? ' - Soft' : ''}) | Dealer showing: ${dealerHand[0].rank}${dealerHand[0].suit} | Correct action: ${ACTION_NAMES[correctAction] || 'N/A'}`;
-
-    try {
-      const response = await fetch('https://gordon-on-blackjack.vercel.app/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, handContext: handContext })
-      });
-
-      const data = await response.json();
-      setIsLoadingChat(false);
+    const typeInterval = setInterval(() => {
+      currentIndex++;
+      const partialMessage = fullMessage.substring(0, currentIndex);
       
-      if (data.error) {
-        setChatMessages(prev => [...prev, { role: 'assistant', content: `Error: ${data.error}` }]);
-      } else {
-        setChatMessages(prev => [...prev, { role: 'assistant', content: '', isTyping: true }]);
-        
-        const fullMessage = data.message;
-        let currentIndex = 0;
-        
-        const typeInterval = setInterval(() => {
-          currentIndex++;
-          const partialMessage = fullMessage.substring(0, currentIndex);
-          
-          setChatMessages(prev => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1] = { 
-              role: 'assistant', 
-              content: partialMessage,
-              isTyping: currentIndex < fullMessage.length
-            };
-            return newMessages;
-          });
-          
-          if (currentIndex >= fullMessage.length) {
-            clearInterval(typeInterval);
-          }
-        }, 20);
+      setChatMessages(prev => {
+        const newMessages = [...prev];
+        newMessages[newMessages.length - 1] = { 
+          role: 'assistant', 
+          content: partialMessage,
+          isTyping: currentIndex < fullMessage.length
+        };
+        return newMessages;
+      });
+      
+      if (currentIndex >= fullMessage.length) {
+        clearInterval(typeInterval);
       }
-    } catch (err) {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error reaching Gordon.' }]);
-      setIsLoadingChat(false);
-    }
-  };
+    }, 20);
+  }
+} catch (err) {
+  setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error reaching Gordon.' }]);
+  setIsLoadingChat(false);
+}
 
-  useEffect(() => { dealNewHand(); }, []);
+};
 
-  const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+useEffect(() => { dealNewHand(); }, []);
+useEffect(() => {
+if (gamePhase === 'complete') {
+setWinStats(prev => ({ ...prev, handsTotal: prev.handsTotal + 1 }));
+}
+}, [gamePhase]);
 
-  return (
-    <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto' }}>
-      {/* Title */}
-      <div style={{ background: 'linear-gradient(90deg, #ff0000, #ffaa00, #ff0000)', padding: '4px', marginBottom: '20px' }}>
-        <div style={{ background: '#000', padding: '20px', textAlign: 'center' }}>
-          <h1 style={{ color: '#ffff00', fontSize: 'clamp(16px, 5vw, 32px)', textShadow: '3px 3px 0 #aa0000', marginBottom: '10px', lineHeight: '1.3' }}>
-            GORDON ON BLACKJACK v2.0
-          </h1>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', marginTop: '8px' }}>
-            {[
-              { label: 'DECKS', value: '6' },
-              { label: 'DEALER', value: 'S17' },
-              { label: 'DOUBLE', value: 'ANY 2' },
-              { label: 'DAS', value: 'YES' },
-              { label: 'SPLIT', value: 'UP TO 3x' },
-              { label: 'BLACKJACK', value: '3:2' },
-            ].map(({ label, value }) => (
-              <div key={label} style={{ border: '2px solid #444', padding: '5px 10px', textAlign: 'center', minWidth: '72px', background: '#111' }}>
-                <div style={{ color: '#888', fontSize: '7px', marginBottom: '3px' }}>{label}</div>
-                <div style={{ color: '#00ff00', fontSize: '9px' }}>{value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
 
-      {/* Two-Column Layout: Game Left, Chat Right */}
-      <div className="two-column-layout" style={{ display: 'flex', gap: '25px', alignItems: 'flex-start' }}>
-        
-        {/* LEFT COLUMN - GAME */}
-        <div style={{ flex: '1', maxWidth: '750px' }}>
-          <div style={{ background: '#1a1a1a', border: '6px solid #333', padding: '18px', borderRadius: '8px' }}>
-            <div style={{ background: 'linear-gradient(180deg, #1a5f3a 0%, #0d3d26 100%)', border: '4px solid #2a7f4a', padding: '18px', borderRadius: '5px' }}>
-              
-              {/* Dealer Hand */}
-              <div style={{ marginBottom: '30px' }}>
-                <div style={{ color: '#ffff00', fontSize: '10px', marginBottom: '10px' }}>
-                  <span style={{ color: '#ff0000' }}>▸</span> DEALER
+return (
+<div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto' }}>
+{/* Title */}
+<div style={{ background: 'linear-gradient(90deg, #ff0000, #ffaa00, #ff0000)', padding: '4px', marginBottom: '20px' }}>
+<div style={{ background: '#000', padding: '20px', textAlign: 'center' }}>
+<h1 style={{ color: '#ffff00', fontSize: 'clamp(16px, 5vw, 32px)', textShadow: '3px 3px 0 #aa0000', marginBottom: '10px', lineHeight: '1.3' }}>
+GORDON ON BLACKJACK v2.0
+</h1>
+<div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', marginTop: '8px' }}>
+{[
+{ label: 'DECKS', value: '6' },
+{ label: 'DEALER', value: 'S17' },
+{ label: 'DOUBLE', value: 'ANY 2' },
+{ label: 'DAS', value: 'YES' },
+{ label: 'SPLIT', value: 'UP TO 3x' },
+{ label: 'BLACKJACK', value: '3:2' },
+].map(({ label, value }) => (
+<div key={label} style={{ border: '2px solid #444', padding: '5px 10px', textAlign: 'center', minWidth: '72px', background: '#111' }}>
+<div style={{ color: '#888', fontSize: '7px', marginBottom: '3px' }}>{label}</div>
+<div style={{ color: '#00ff00', fontSize: '9px' }}>{value}</div>
+</div>
+))}
+</div>
+</div>
+</div>
+
+  {/* Two-Column Layout: Game Left, Chat Right */}
+  <div className="two-column-layout" style={{ display: 'flex', gap: '25px', alignItems: 'flex-start' }}>
+    
+    {/* LEFT COLUMN - GAME */}
+    <div style={{ flex: '1', maxWidth: '750px' }}>
+      <div style={{ background: '#1a1a1a', border: '6px solid #333', padding: '18px', borderRadius: '8px' }}>
+        <div style={{ background: 'linear-gradient(180deg, #1a5f3a 0%, #0d3d26 100%)', border: '4px solid #2a7f4a', padding: '18px', borderRadius: '5px' }}>
+          
+          {/* Dealer Hand */}
+          <div style={{ marginBottom: '30px' }}>
+            <div style={{ color: '#ffff00', fontSize: '10px', marginBottom: '10px' }}>
+              <span style={{ color: '#ff0000' }}>▸</span> DEALER
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              {dealerHand.map((card, idx) => (
+                <div key={idx}>
+                  {idx === 0 || gamePhase !== 'player' ? (
+                    <div className="nes-card pixel-card" style={{ color: card.suit === '♥' || card.suit === '♦' ? '#ff0000' : '#000' }}>
+                      <div style={{ fontSize: '20px' }}>{card.rank}</div>
+                      <div style={{ fontSize: '28px' }}>{card.suit}</div>
+                    </div>
+                  ) : (
+                    <div className="pixel-card" style={{ background: 'linear-gradient(135deg, #0066cc, #003399)', border: '3px solid #fff', color: '#fff', fontSize: '32px' }}>
+                      🂠
+                    </div>
+                  )}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                  {dealerHand.map((card, idx) => (
-                    <div key={idx}>
-                      {idx === 0 || gamePhase !== 'player' ? (
-                        <div className="nes-card pixel-card" style={{ color: card.suit === '♥' || card.suit === '♦' ? '#ff0000' : '#000' }}>
-                          <div style={{ fontSize: '20px' }}>{card.rank}</div>
-                          <div style={{ fontSize: '28px' }}>{card.suit}</div>
-                        </div>
-                      ) : (
-                        <div className="pixel-card" style={{ background: 'linear-gradient(135deg, #0066cc, #003399)', border: '3px solid #fff', color: '#fff', fontSize: '32px' }}>
-                          🂠
+              ))}
+            </div>
+            {gamePhase !== 'player' && (
+              <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                <div style={{ background: 'rgba(0,0,0,0.7)', border: '2px solid #00ff00', display: 'inline-block', padding: '5px 15px', fontSize: '10px', color: '#00ff00' }}>
+                  TOTAL: {calculateHandValue(dealerHand)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Player Hand(s) */}
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ color: '#ffff00', fontSize: '10px', marginBottom: '10px' }}>
+              <span style={{ color: '#00ff00' }}>▸</span> YOU{splitHands ? ` — HAND ${activeSplitIdx + 1} OF ${splitHands.length}` : ''}
+            </div>
+
+            {splitHands ? (
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {splitHands.map((hand, idx) => {
+                  const isActive = idx === activeSplitIdx && gamePhase === 'player';
+                  const isDone = gamePhase === 'complete' || idx < activeSplitIdx || (idx === activeSplitIdx && gamePhase === 'complete');
+                  const result = hand.result;
+                  const resultColor = result === 'WIN' ? '#00ff00' : result === 'LOSE' || result === 'BUST' ? '#ff4444' : '#ffaa00';
+                  return (
+                    <div key={idx} style={{
+                      border: `3px solid ${isActive ? '#ffff00' : result ? resultColor : '#444'}`,
+                      padding: '10px',
+                      background: isActive ? 'rgba(255,255,0,0.05)' : 'rgba(0,0,0,0.3)',
+                      borderRadius: '4px',
+                      minWidth: '120px',
+                      textAlign: 'center',
+                      position: 'relative',
+                    }}>
+                      {isActive && (
+                        <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#ffff00', color: '#000', fontSize: '7px', padding: '2px 6px', whiteSpace: 'nowrap' }}>
+                          ▶ PLAYING
                         </div>
                       )}
+                      <div style={{ color: '#888', fontSize: '7px', marginBottom: '6px' }}>HAND {idx + 1}</div>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        {hand.cards.map((card, ci) => (
+                          <div key={ci} className="nes-card" style={{
+                            width: '44px', height: '62px', display: 'flex', flexDirection: 'column',
+                            alignItems: 'center', justifyContent: 'center',
+                            color: card.suit === '♥' || card.suit === '♦' ? '#ff0000' : '#000',
+                            fontSize: '12px'
+                          }}>
+                            <div>{card.rank}</div>
+                            <div style={{ fontSize: '18px' }}>{card.suit}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ color: result ? resultColor : '#00ff00', fontSize: '8px' }}>
+                        {result ? result : `TOTAL: ${calculateHandValue(hand.cards)}${isSoftHand(hand.cards) ? ' (S)' : ''}`}
+                      </div>
                     </div>
-                  ))}
-                </div>
-                {gamePhase !== 'player' && (
-                  <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                    <div style={{ background: 'rgba(0,0,0,0.7)', border: '2px solid #00ff00', display: 'inline-block', padding: '5px 15px', fontSize: '10px', color: '#00ff00' }}>
-                      TOTAL: {calculateHandValue(dealerHand)}
-                    </div>
-                  </div>
-                )}
+                  );
+                })}
               </div>
-
-              {/* Player Hand */}
-              <div style={{ marginBottom: '30px' }}>
-                <div style={{ color: '#ffff00', fontSize: '10px', marginBottom: '10px' }}>
-                  <span style={{ color: '#00ff00' }}>▸</span> YOU
-                </div>
+            ) : (
+              <div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   {playerHand.map((card, idx) => (
                     <div key={idx} className="nes-card pixel-card" style={{ color: card.suit === '♥' || card.suit === '♦' ? '#ff0000' : '#000' }}>
@@ -484,129 +582,144 @@ function GordonOnBlackjack() {
                   </div>
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              {gamePhase === 'player' && (
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ textAlign: 'center', marginBottom: '15px', color: '#fff', fontSize: '10px' }}>
-                    WHAT DO YOU DO?
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <button onClick={() => handleAction('H')} disabled={feedback.startsWith('✗')} className="nes-btn" style={{ background: '#0066ff', color: '#fff' }}>HIT</button>
-                    <button onClick={() => handleAction('S')} disabled={feedback.startsWith('✗')} className="nes-btn" style={{ background: '#ff0000', color: '#fff' }}>STAND</button>
-                    <button onClick={() => handleAction('D')} disabled={feedback.startsWith('✗') || activeCards().length > 2} className="nes-btn" style={{ background: '#ffaa00', color: '#000' }}>DOUBLE</button>
-                    <button onClick={() => handleAction('P')} disabled={feedback.startsWith('✗') || activeCards().length > 2 || splitHands} className="nes-btn" style={{ background: '#aa00ff', color: '#fff' }}>SPLIT</button>
-                  </div>
-                </div>
-              )}
-
-              {/* Feedback */}
-              {feedback && (
-                <div style={{
-                  background: feedback.includes('WIN') || feedback.startsWith('✓') ? '#00aa00' : feedback.startsWith('✗') ? '#aa0000' : '#0066ff',
-                  border: '3px solid #fff',
-                  padding: '15px',
-                  color: '#fff',
-                  fontSize: '10px',
-                  textAlign: 'center',
-                  whiteSpace: 'pre-wrap'
-                }}>
-                  {feedback}
-                </div>
-              )}
-
-              {/* Next Hand */}
-              {(gamePhase === 'complete' || feedback.startsWith('✗')) && (
-                <div style={{ textAlign: 'center', marginTop: '15px' }}>
-                  <button onClick={dealNewHand} className="nes-btn" style={{ background: '#00aa00', color: '#fff', fontSize: '10px' }}>
-                    NEXT HAND
-                  </button>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
-          {/* Session Stats */}
-          <div style={{ background: '#333', border: '4px solid #fff', padding: '12px', marginTop: '15px' }}>
-            <div style={{ color: '#ffaa00', fontSize: '8px', textAlign: 'center', marginBottom: '10px', letterSpacing: '2px' }}>SESSION STATS</div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ color: '#888', fontSize: '7px', marginBottom: '4px' }}>STRATEGY ACCURACY</div>
-                <div style={{ color: '#00ff00', fontSize: '10px' }}>{stats.correct}/{stats.total} ({accuracy}%)</div>
+          {/* Action Buttons */}
+          {gamePhase === 'player' && (
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '15px', color: '#fff', fontSize: '10px' }}>
+                {splitHands ? `HAND ${activeSplitIdx + 1}: WHAT DO YOU DO?` : 'WHAT DO YOU DO?'}
               </div>
-              <div style={{ width: '2px', background: '#555', margin: '0 4px' }} />
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ color: '#888', fontSize: '7px', marginBottom: '4px' }}>HANDS WON</div>
-                <div style={{ color: '#00ff00', fontSize: '10px' }}>{winStats.wins}/{winStats.handsTotal} ({winStats.handsTotal > 0 ? Math.round((winStats.wins / winStats.handsTotal) * 100) : 0}%)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN - GORDON CHAT (Always Visible) */}
-        <div className="chat-column" style={{ width: '420px', flexShrink: 0 }}>
-          <div style={{ background: '#1a1a1a', border: '4px solid #fff', padding: '18px', position: 'sticky', top: '20px' }}>
-            {/* Gordon Character Header */}
-            <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-              <div style={{ marginBottom: '8px' }} dangerouslySetInnerHTML={{ __html: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="110" height="110" style="image-rendering: pixelated;"><style>.pixel{shape-rendering:crispEdges}</style><rect class="pixel" x="20" y="12" width="4" height="4" fill="#FFDBAC"/><rect class="pixel" x="24" y="8" width="16" height="4" fill="#FFDBAC"/><rect class="pixel" x="40" y="12" width="4" height="4" fill="#FFDBAC"/><rect class="pixel" x="16" y="16" width="32" height="16" fill="#FFDBAC"/><rect class="pixel" x="20" y="4" width="24" height="4" fill="#5D4037"/><rect class="pixel" x="16" y="8" width="32" height="4" fill="#5D4037"/><rect class="pixel" x="16" y="12" width="4" height="4" fill="#5D4037"/><rect class="pixel" x="44" y="12" width="4" height="4" fill="#5D4037"/><rect class="pixel" x="24" y="4" width="4" height="2" fill="#795548"/><rect class="pixel" x="32" y="4" width="4" height="2" fill="#795548"/><rect class="pixel" x="24" y="16" width="4" height="4" fill="#FFF"/><rect class="pixel" x="36" y="16" width="4" height="4" fill="#FFF"/><rect class="pixel" x="26" y="18" width="2" height="2" fill="#000"/><rect class="pixel" x="38" y="18" width="2" height="2" fill="#000"/><rect class="pixel" x="20" y="24" width="4" height="4" fill="#2C1810"/><rect class="pixel" x="24" y="24" width="4" height="4" fill="#2C1810"/><rect class="pixel" x="28" y="24" width="8" height="4" fill="#2C1810"/><rect class="pixel" x="36" y="24" width="4" height="4" fill="#2C1810"/><rect class="pixel" x="40" y="24" width="4" height="4" fill="#2C1810"/><rect class="pixel" x="24" y="28" width="16" height="2" fill="#1A0F08"/><rect class="pixel" x="30" y="20" width="4" height="4" fill="#FFCB9A"/><rect class="pixel" x="28" y="30" width="8" height="2" fill="#8B4513"/><rect class="pixel" x="44" y="28" width="8" height="4" fill="#8B4513"/><rect class="pixel" x="52" y="28" width="4" height="4" fill="#A0522D"/><rect class="pixel" x="56" y="28" width="2" height="4" fill="#F40"/><rect class="pixel" x="58" y="30" width="2" height="2" fill="#FD7"/><rect class="pixel" x="24" y="32" width="16" height="4" fill="#FFDBAC"/><rect class="pixel" x="20" y="36" width="8" height="4" fill="#FFF"/><rect class="pixel" x="36" y="36" width="8" height="4" fill="#FFF"/><rect class="pixel" x="28" y="36" width="8" height="4" fill="#000"/><rect class="pixel" x="26" y="38" width="2" height="2" fill="#000"/><rect class="pixel" x="36" y="38" width="2" height="2" fill="#000"/><rect class="pixel" x="16" y="40" width="32" height="20" fill="#C41E3A"/><rect class="pixel" x="18" y="42" width="2" height="16" fill="#8B1428"/><rect class="pixel" x="44" y="42" width="2" height="16" fill="#8B1428"/><rect class="pixel" x="30" y="44" width="4" height="4" fill="#FD7"/><rect class="pixel" x="30" y="52" width="4" height="4" fill="#FD7"/><rect class="pixel" x="12" y="44" width="4" height="12" fill="#FFF"/><rect class="pixel" x="48" y="44" width="4" height="12" fill="#FFF"/><rect class="pixel" x="12" y="56" width="4" height="4" fill="#FFDBAC"/><rect class="pixel" x="48" y="56" width="4" height="4" fill="#FFDBAC"/><rect class="pixel" x="20" y="60" width="24" height="4" fill="#C41E3A"/></svg>' }} />
-              <div style={{ background: '#0066ff', border: '3px solid #fff', display: 'inline-block', padding: '8px 16px', fontSize: '10px', color: '#fff', fontWeight: 'bold' }}>
-                ASK DEALER GORDON
-              </div>
-            </div>
-            
-            {/* Messages */}
-            <div ref={chatContainerRef} style={{ border: '3px solid #666', background: '#0a0a0a', padding: '12px', marginBottom: '12px', minHeight: '420px', maxHeight: '520px', overflowY: 'auto', fontSize: '9px', lineHeight: '1.5' }}>
-              {chatMessages.length === 0 && !isLoadingChat && (
-                <div style={{ color: '#666', fontStyle: 'italic' }}>
-                  Gordon's wisdom appears here. Ask about strategy!
+              {wrongFeedback && (
+                <div style={{ background: '#6a0000', border: '2px solid #ff4444', padding: '10px', color: '#fff', fontSize: '9px', textAlign: 'center', marginBottom: '10px' }}>
+                  {wrongFeedback}
                 </div>
               )}
-              {chatMessages.map((msg, idx) => (
-                <div key={idx} style={{ background: msg.role === 'user' ? '#003366' : '#1a1a1a', border: `2px solid ${msg.role === 'user' ? '#0066ff' : '#00ff00'}`, padding: '10px', marginBottom: '10px', borderRadius: '3px' }}>
-                  <div style={{ color: msg.role === 'user' ? '#00aaff' : '#00ff00', fontSize: '8px', marginBottom: '5px', fontWeight: 'bold' }}>
-                    {msg.role === 'user' ? 'YOU' : 'GORDON'}
-                  </div>
-                  <div style={{ color: '#fff', whiteSpace: 'pre-wrap' }}>{msg.content}</div>
-                </div>
-              ))}
-              {isLoadingChat && (
-                <div style={{ background: '#1a1a1a', border: '2px solid #00ff00', padding: '10px', borderRadius: '3px' }}>
-                  <div style={{ color: '#00ff00', fontSize: '8px', marginBottom: '5px', fontWeight: 'bold' }}>GORDON</div>
-                  <div style={{ color: '#666', fontStyle: 'italic' }}>Dealing wisdom...</div>
-                </div>
-              )}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <button onClick={() => handleAction('H')} disabled={feedback.startsWith('✗')} className="nes-btn" style={{ background: '#0066ff', color: '#fff' }}>HIT</button>
+                <button onClick={() => handleAction('S')} disabled={feedback.startsWith('✗')} className="nes-btn" style={{ background: '#ff0000', color: '#fff' }}>STAND</button>
+                <button onClick={() => handleAction('D')} disabled={feedback.startsWith('✗') || activeCards().length > 2} className="nes-btn" style={{ background: '#ffaa00', color: '#000' }}>DOUBLE</button>
+                <button
+                  onClick={() => handleAction('P')}
+                  disabled={feedback.startsWith('✗') || activeCards().length > 2 || (splitHands && splitHands.length >= 3)}
+                  className="nes-btn"
+                  style={{ background: '#aa00ff', color: '#fff' }}
+                >SPLIT</button>
+              </div>
             </div>
+          )}
 
-            {/* Input */}
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleChatSubmit(); }}
-                placeholder="What's the book say?"
-                disabled={isLoadingChat}
-                style={{ flex: 1, padding: '10px', border: '3px solid #fff', background: '#000', color: '#fff', fontFamily: "'Press Start 2P', cursive", fontSize: '8px', outline: 'none' }}
-              />
-              <button onClick={handleChatSubmit} disabled={isLoadingChat || !chatInput.trim()} className="nes-btn" style={{ background: '#00aa00', color: '#fff', fontSize: '9px', padding: '10px 20px' }}>
-                ASK
+          {/* Feedback */}
+          {feedback && (
+            <div style={{
+              background: feedback.startsWith('✗') ? '#aa0000' : gamePhase === 'complete' && splitHands ? '#1a3a1a' : feedback.includes('WIN') || feedback.startsWith('✓') ? '#00aa00' : '#0066ff',
+              border: '3px solid #fff',
+              padding: '15px',
+              color: '#fff',
+              fontSize: '10px',
+              textAlign: 'center',
+              whiteSpace: 'pre-wrap',
+              marginBottom: '10px'
+            }}>
+              {feedback}
+            </div>
+          )}
+
+          {/* Next Hand */}
+          {(gamePhase === 'complete' || feedback.startsWith('✗')) && (
+            <div style={{ textAlign: 'center', marginTop: '15px' }}>
+              <button onClick={dealNewHand} className="nes-btn" style={{ background: '#00aa00', color: '#fff', fontSize: '10px' }}>
+                NEXT HAND
               </button>
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* Session Stats */}
+      <div style={{ background: '#333', border: '4px solid #fff', padding: '12px', marginTop: '15px' }}>
+        <div style={{ color: '#ffaa00', fontSize: '8px', textAlign: 'center', marginBottom: '10px', letterSpacing: '2px' }}>SESSION STATS</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: '#888', fontSize: '7px', marginBottom: '4px' }}>STRATEGY ACCURACY</div>
+            <div style={{ color: '#00ff00', fontSize: '10px' }}>{stats.correct}/{stats.total} ({accuracy}%)</div>
+          </div>
+          <div style={{ width: '2px', background: '#555', margin: '0 4px' }} />
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: '#888', fontSize: '7px', marginBottom: '4px' }}>HANDS WON</div>
+            <div style={{ color: '#00ff00', fontSize: '10px' }}>{winStats.wins}/{winStats.handsTotal} ({winStats.handsTotal > 0 ? Math.round((winStats.wins / winStats.handsTotal) * 100) : 0}%)</div>
           </div>
         </div>
-
-      </div>
-
-      {/* Footer */}
-      <div style={{ textAlign: 'center', marginTop: '30px', fontSize: '8px', color: '#666', borderTop: '2px solid #333', paddingTop: '20px' }}>
-        GORDON ON BLACKJACK v2.0 © 2026 • LEARN FROM GORDON • BEAT THE HOUSE
       </div>
     </div>
-  );
+
+    {/* RIGHT COLUMN - GORDON CHAT (Always Visible) */}
+    <div className="chat-column" style={{ width: '420px', flexShrink: 0 }}>
+      <div style={{ background: '#1a1a1a', border: '4px solid #fff', padding: '18px', position: 'sticky', top: '20px' }}>
+        {/* Gordon Character Header */}
+        <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+          <div style={{ marginBottom: '8px' }} dangerouslySetInnerHTML={{ __html: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="110" height="110" style="image-rendering: pixelated;"><style>.pixel{shape-rendering:crispEdges}</style><rect class="pixel" x="20" y="12" width="4" height="4" fill="#FFDBAC"/><rect class="pixel" x="24" y="8" width="16" height="4" fill="#FFDBAC"/><rect class="pixel" x="40" y="12" width="4" height="4" fill="#FFDBAC"/><rect class="pixel" x="16" y="16" width="32" height="16" fill="#FFDBAC"/><rect class="pixel" x="20" y="4" width="24" height="4" fill="#5D4037"/><rect class="pixel" x="16" y="8" width="32" height="4" fill="#5D4037"/><rect class="pixel" x="16" y="12" width="4" height="4" fill="#5D4037"/><rect class="pixel" x="44" y="12" width="4" height="4" fill="#5D4037"/><rect class="pixel" x="24" y="4" width="4" height="2" fill="#795548"/><rect class="pixel" x="32" y="4" width="4" height="2" fill="#795548"/><rect class="pixel" x="24" y="16" width="4" height="4" fill="#FFF"/><rect class="pixel" x="36" y="16" width="4" height="4" fill="#FFF"/><rect class="pixel" x="26" y="18" width="2" height="2" fill="#000"/><rect class="pixel" x="38" y="18" width="2" height="2" fill="#000"/><rect class="pixel" x="20" y="24" width="4" height="4" fill="#2C1810"/><rect class="pixel" x="24" y="24" width="4" height="4" fill="#2C1810"/><rect class="pixel" x="28" y="24" width="8" height="4" fill="#2C1810"/><rect class="pixel" x="36" y="24" width="4" height="4" fill="#2C1810"/><rect class="pixel" x="40" y="24" width="4" height="4" fill="#2C1810"/><rect class="pixel" x="24" y="28" width="16" height="2" fill="#1A0F08"/><rect class="pixel" x="30" y="20" width="4" height="4" fill="#FFCB9A"/><rect class="pixel" x="28" y="30" width="8" height="2" fill="#8B4513"/><rect class="pixel" x="44" y="28" width="8" height="4" fill="#8B4513"/><rect class="pixel" x="52" y="28" width="4" height="4" fill="#A0522D"/><rect class="pixel" x="56" y="28" width="2" height="4" fill="#F40"/><rect class="pixel" x="58" y="30" width="2" height="2" fill="#FD7"/><rect class="pixel" x="24" y="32" width="16" height="4" fill="#FFDBAC"/><rect class="pixel" x="20" y="36" width="8" height="4" fill="#FFF"/><rect class="pixel" x="36" y="36" width="8" height="4" fill="#FFF"/><rect class="pixel" x="28" y="36" width="8" height="4" fill="#000"/><rect class="pixel" x="26" y="38" width="2" height="2" fill="#000"/><rect class="pixel" x="36" y="38" width="2" height="2" fill="#000"/><rect class="pixel" x="16" y="40" width="32" height="20" fill="#C41E3A"/><rect class="pixel" x="18" y="42" width="2" height="16" fill="#8B1428"/><rect class="pixel" x="44" y="42" width="2" height="16" fill="#8B1428"/><rect class="pixel" x="30" y="44" width="4" height="4" fill="#FD7"/><rect class="pixel" x="30" y="52" width="4" height="4" fill="#FD7"/><rect class="pixel" x="12" y="44" width="4" height="12" fill="#FFF"/><rect class="pixel" x="48" y="44" width="4" height="12" fill="#FFF"/><rect class="pixel" x="12" y="56" width="4" height="4" fill="#FFDBAC"/><rect class="pixel" x="48" y="56" width="4" height="4" fill="#FFDBAC"/><rect class="pixel" x="20" y="60" width="24" height="4" fill="#C41E3A"/></svg>' }} />
+          <div style={{ background: '#0066ff', border: '3px solid #fff', display: 'inline-block', padding: '8px 16px', fontSize: '10px', color: '#fff', fontWeight: 'bold' }}>
+            ASK DEALER GORDON
+          </div>
+        </div>
+        
+        {/* Messages */}
+        <div ref={chatContainerRef} style={{ border: '3px solid #666', background: '#0a0a0a', padding: '12px', marginBottom: '12px', minHeight: '420px', maxHeight: '520px', overflowY: 'auto', fontSize: '9px', lineHeight: '1.5' }}>
+          {chatMessages.length === 0 && !isLoadingChat && (
+            <div style={{ color: '#666', fontStyle: 'italic' }}>
+              Gordon's wisdom appears here. Ask about strategy!
+            </div>
+          )}
+          {chatMessages.map((msg, idx) => (
+            <div key={idx} style={{ background: msg.role === 'user' ? '#003366' : '#1a1a1a', border: `2px solid ${msg.role === 'user' ? '#0066ff' : '#00ff00'}`, padding: '10px', marginBottom: '10px', borderRadius: '3px' }}>
+              <div style={{ color: msg.role === 'user' ? '#00aaff' : '#00ff00', fontSize: '8px', marginBottom: '5px', fontWeight: 'bold' }}>
+                {msg.role === 'user' ? 'YOU' : 'GORDON'}
+              </div>
+              <div style={{ color: '#fff', whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+            </div>
+          ))}
+          {isLoadingChat && (
+            <div style={{ background: '#1a1a1a', border: '2px solid #00ff00', padding: '10px', borderRadius: '3px' }}>
+              <div style={{ color: '#00ff00', fontSize: '8px', marginBottom: '5px', fontWeight: 'bold' }}>GORDON</div>
+              <div style={{ color: '#666', fontStyle: 'italic' }}>Dealing wisdom...</div>
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleChatSubmit(); }}
+            placeholder="What's the book say?"
+            disabled={isLoadingChat}
+            style={{ flex: 1, padding: '10px', border: '3px solid #fff', background: '#000', color: '#fff', fontFamily: "'Press Start 2P', cursive", fontSize: '8px', outline: 'none' }}
+          />
+          <button onClick={handleChatSubmit} disabled={isLoadingChat || !chatInput.trim()} className="nes-btn" style={{ background: '#00aa00', color: '#fff', fontSize: '9px', padding: '10px 20px' }}>
+            ASK
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {/* Footer */}
+  <div style={{ textAlign: 'center', marginTop: '30px', fontSize: '8px', color: '#666', borderTop: '2px solid #333', paddingTop: '20px' }}>
+    GORDON ON BLACKJACK v2.0 © 2026 • LEARN FROM GORDON • BEAT THE HOUSE
+  </div>
+</div>
+
+);
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(React.createElement(GordonOnBlackjack));
-  </script>
+</script>
+
 </body>
 </html>
