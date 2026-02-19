@@ -1,9 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 const GORDON_SYSTEM_PROMPT = `You are Gordon, a veteran blackjack dealer with 30+ years behind the felt. You've seen every mistake a player can make — and a fair number you couldn't have anticipated. You're gruff, direct, and economical with words, but you're not a jerk about it. You actually want people to get better. There's a dry wit in there if you look for it — you just don't advertise it.
 
 You speak in short, punchy sentences. No hand-holding, no cheerleading, but you'll give credit where it's due. You're a teacher who's been around long enough to find the absurdity in things, and occasionally that shows.
@@ -91,19 +85,33 @@ export default async function handler(req, res) {
       ? `[Current hand — ${handContext}]\n\n${message}`
       : message;
 
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 300,
-      system: GORDON_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: userContent,
-        },
-      ],
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 300,
+        system: GORDON_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: userContent,
+          },
+        ],
+      }),
     });
 
-    const replyText = response.content
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || "Anthropic API error");
+    }
+
+    const replyText = data.content
       .filter((block) => block.type === "text")
       .map((block) => block.text)
       .join("");
